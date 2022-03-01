@@ -1,15 +1,9 @@
 /* 
-Arrays
-เมื่อคุณต้องการชุดข้อมูลของอะไรบางอย่าง คุณสามารถใช้ array มาช่วยในการจัดการได้ ซึ่งใน Solidity นั้นเราจะมี arrays อยู่2 ชนิด ได้แก่: fixed arrays และ dynamic arrays:
+Public Arrays
+เราสามารถประกาศ array ให้มีค่าเป็น public และ Solidity ก็จะสร้าง getter method ขึ้นมาโดยอัตโนมัติสำหรับ array นี้ โดยหน้าตาของ syntax จะเป็นดังต่อไปนี้:
 
-// fixed Array จำกัดความยาวให้มีแค่2 elements :
-uint[2] fixedArray;
-// หรือจะเป็น fixed Array ที่สามารถมีข้อมูลชนิด Strings ได้ 5 ตัวก็จะเขียนได้ว่า:
-string[5] stringArray ;
-// Dynamic Array – จะไม่จำกัดขนาดที่แน่นอน ซึ่งแปลว่า array ชนิดนี้สามารถมีขนาดเพิ่มได้เรื่อยๆ :
-uint[] dynamicArray;
+Person[] public people;
 
-ตัวอย่าง dynamic Array
-Person[] people;
+ทำให้ contract อื่นๆ จะสามารถอ่านค่าได้ (แต่ไม่สามารถเขียนได้) ลงใน array นี้ ดังนั้นpattern นี้จึงเหมาะสำหรับการบรรจุข้อมูลที่เป็นสาธารณะหรือว่า public ใน contract ของคุณ
 
 */
