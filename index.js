@@ -1,59 +1,66 @@
 /* 
-หัวข้อ 13: การสร้างอีเวนท์
+หัวข้อ 14: Web3.js
 
-contract ของเราก็จะใกล้เสร็จแล้ว จนถึงตอนนี้ก็ได้ถึงเวลาของการเพิ่ม event เข้าไป
+Solidity contract ของเราก็เสร็จเรียบร้อยแล้ว! ตอนนี้ก็ได้เวลาของการเขียน javascript ที่จะไว้ใช้ด้านหน้าเพื่อ interact กับ contract แล้ว
 
-Events คือวิธีหนึ่งสำหรับ contract ของเราที่จะสามารถสื่อสารได้ว่า มีบางสิ่งเกิดขึ้นบนบล็อคเชนของด้านหน้าแอพพลิเคชั่นของเรา (front-end) ซึ่งจะสามารถถูกฟัง (‘listening’) สำหรับบางเหตุการณ์และอาจจะมีการกำหนดให้สร้าง action ขึ้นมาเพื่อนรองรับอีเว้นท์ที่เกิดขึ้น
+Ethereum นั้นมี Javascript library ชื่อว่า Web3.js
 
-ตัวอย่าง:
-// ประกาศอีเว้นท์
-event IntegersAdded(uint x, uint y, uint result); ประกาศ event ให้หน้าบ้านเรียกใช้
+ในบทหลังๆ เราจะทำการเรียนรู้ในเชิงลึกเกี่ยวกับการนำ contract มาปรับใช้และติดตั้ง Web3.js แต่ในตอนนี้จะขอพูดถึงแค่ตัวอย่างของโค้ดว่า Web3.jsนั้น interact กับ contractที่นำมาปรับใช้ของเราอย่างไร
 
-function add(uint _x, uint _y) public {
-  uint result = _x + _y;
-  // สร้าง event ขึ้นมาเพื่อให้แอพพลิเคชั่นรู้ว่าฟังก์ชั่นได้ถูกเรียกแล้ว:
-  IntegersAdded(_x, _y, result); // เรียกใช้ event ที่หน้าบ้าน call มาภายใน function ที่อยู่ใน contract
-  return result;
-}
+แต่ยังไม่ต้องกังวลหากยังไม่เข้าใจโค้ดที่กำลังจะนำมาแสดงให้ดู:
 
-Events ที่ถูกสร้างจาก contract หน้าบ้าน หรือ front-end ใช้หลักการของ listening ในการฟัง event เหล่านั้น ตัวอย่างของการ listening ผ่าน front-end
-YourContract.IntegersAdded(function(error, result) {
-  // ทำบางอย่างกับ result
+
+
+*/
+// การเข้าถึง contract:
+var abi = /* abi จะถูกสร้างโดยคอมไพล์เลอร์ */
+var ZombieFactoryContract = web3.eth.contract(abi)
+var contractAddress = /*ส่วนนี้คือที่อยู่ contract ของเราบน Ethereum หลังจากได้นำมาใช้ */
+var ZombieFactory = ZombieFactoryContract.at(contractAddress)
+// `ZombieFactory` ได้ทำการเข้าถึงฟังก์ชั่นและอีเว้นท์ต่างๆที่เป็นชนิด public ใน contract ของเราเรียบร้อย
+
+// ต่อไปนี้จะเป็น event listener บางตัวที่จะรับค่า input ชนิดข้อความ:
+$("#ourButton").click(function(e) {
+  var name = $("#nameInput").val()
+  // เรียกฟังก์ชัน `createRandomZombie` ในcontract ของเรา:
+  ZombieFactory.createRandomZombie(name)
 })
 
-pragma solidity ^0.4.19;
+// รับฟังเหตุการณ์ `NewZombie` event, and update the UI `NewZombie` พร้อมทั้งทำการอัพเดท User Interface หรือการแสดงผลในส่วนของผู้ใช้
+var event = ZombieFactory.NewZombie(function(error, result) {
+  if (error) return
+  generateZombie(result.zombieId, result.name, result.dna)
+})
 
-contract ZombieFactory {
+// รับค่า DNA ของซอมบี้และทำการอัพเดทรูปภาพ
+function generateZombie(id, name, dna) {
+  let dnaStr = String(dna)
+  // เว้นระยะห่างด้านหน้าของ DNA ด้วยเลข 0 หากจำนวน DNA นั้นมีความยาวน้อยกว่า 16ตัว
+  while (dnaStr.length < 16)
+    dnaStr = "0" + dnaStr
 
-    // เราจะทำการประกาศอีเวนท์ตรงนี้
-    event NewZombie(uint zombieId, string name, uint dna);
-
-    uint dnaDigits = 16;
-    uint dnaModulus = 10 ** dnaDigits;
-
-    struct Zombie {
-        string name;
-        uint dna;
-    }
-
-    Zombie[] public zombies;
-
-    function _createZombie(string _name, uint _dna) private {
-        // and fire it here
-        uint id = zombies.push(Zombie(_name, _dna)) - 1; // return index array ล่าสุดที่เพิ่มถูกเพิ่มเข้าไปใน array zombies
-        NewZombie(id, _name, _dna); // ส่งค่าไปให้ event NewZombie
-    }
-
-    function _generateRandomDna(string _str) private view returns (uint) {
-        uint rand = uint(keccak256(_str));
-        return rand % dnaModulus;
-    }
-
-    function createRandomZombie(string _name) public {
-        uint randDna = _generateRandomDna(_name);
-        _createZombie(_name, randDna);
-    }
-
+  let zombieDetails = {
+    //DNA สองตัวแรกจะบ่งบอกลักษณะของหัว และเราสามารถเลือกได้ 7 แบบดังนั้น จะทำการ % ด้วย 7 
+    // เพื่อที่จะได้จำนวน 0 – 6 จากนั้น+ด้วย1เพื่อให้ได้เป็นจำนวน 1 – 7 ทำให้เรามี7ตัวเลือก
+    // ไฟล์รูปภาพชื่อว่า"head1.png" ไปจนถึง "head7.png" 
+    // this number:
+    headChoice: dnaStr.substring(0, 2) % 7 + 1,
+    // 2ตัวถัดไปจะใช้เพื่อการเลือกรูปแบบของตา ถึงเราจะเลือกได้11รูปแบบ:
+    eyeChoice: dnaStr.substring(2, 4) % 11 + 1,
+    // เลือกเสื้อได้6แบบ:
+    shirtChoice: dnaStr.substring(4, 6) % 6 + 1,
+    // ข้อมูล6ตัวสุดท้ายจะเอาไว้ใช้เลือกสี โดยเราจะทำการอัพเดทโดยใช้ CSS filter: hue-rotate
+    // ซึ่งมี 360องศา:
+    skinColorChoice: parseInt(dnaStr.substring(6, 8) / 100 * 360),
+    eyeColorChoice: parseInt(dnaStr.substring(8, 10) / 100 * 360),
+    clothesColorChoice: parseInt(dnaStr.substring(10, 12) / 100 * 360),
+    zombieName: name,
+    zombieDescription: "A Level 1 CryptoZombie",
+  }
+  return zombieDetails
 }
+
+/* 
+และนี่ก็คือ javascript ของเรา ที่จะทำการสร้าง zombieDetails ด้านบน และอาจจะต้องใช้ javascripts ที่หามาจาก browser อีกเล็กน้อย (ในที่นี้เราใช้ Vau.js) เพื่อใช้ในการเปลี่ยนรูปต่างๆ ไปมาและใส่ CSS filter ต่างๆ ซึ่งคุณจะเข้าใจโค้ดทั้งหมดนี้ในบทต่อๆ ไป
 
 */
