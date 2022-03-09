@@ -1,66 +1,20 @@
 /* 
-หัวข้อ 14: Web3.js
+https://cryptozombies.io/th/lesson/2/chapter/1
+หัวข้อ 1: ภาพรวมของบทที่ 2
+ในบทที่ 1 เราได้สร้างฟังก์ชันที่สามารถรับข้อมูลในส่วนของชื่อ ซึ่งจะถูกนำไปใช้ในการสร้างซอมบี้ขึ้นมาในรูปแบบของการสุ่ม และเพิ่มซอมบี้ตัวนั้นเข้าไปใน database ที่อยู่ภายในแอพพลิเคชั่นซอมบี้ของเราบน blockchain
 
-Solidity contract ของเราก็เสร็จเรียบร้อยแล้ว! ตอนนี้ก็ได้เวลาของการเขียน javascript ที่จะไว้ใช้ด้านหน้าเพื่อ interact กับ contract แล้ว
+ในบทที่ 2 เราจะทำให้แอพพลิเคชั่นนี้มีความคล้ายเกมมากขึ้น: เราจะทำให้เกมนี้สามารถเล่นได้พร้อมกันหลายๆ คน (multi-player) และเรายังจะเพิ่มลูกเล่นในการสร้างซอมบี้ให้มากขึ้นไปอีก โดยจะไม่สร้างจากเพียงแค่การสุ่มเท่านั้น
 
-Ethereum นั้นมี Javascript library ชื่อว่า Web3.js
+สงสัยใช่ไหมว่าจะสร้างซอมบี้ตัวใหม่ขึ้นมาอย่างไร? โดยการให้มัน "กิน" สิ่งมีชีวิตอื่นยังไงล่ะ!
 
-ในบทหลังๆ เราจะทำการเรียนรู้ในเชิงลึกเกี่ยวกับการนำ contract มาปรับใช้และติดตั้ง Web3.js แต่ในตอนนี้จะขอพูดถึงแค่ตัวอย่างของโค้ดว่า Web3.jsนั้น interact กับ contractที่นำมาปรับใช้ของเราอย่างไร
+DNA ของ NoName
+6038148195197117
 
-แต่ยังไม่ต้องกังวลหากยังไม่เข้าใจโค้ดที่กำลังจะนำมาแสดงให้ดู:
+DNA ของ มนุษย์
+8012756276883397
 
+DNA จาก เจ้าซอมบี้กลายพันธุ์ ใหม่
+7025452236040299
 
-
-*/
-// การเข้าถึง contract:
-var abi = /* abi จะถูกสร้างโดยคอมไพล์เลอร์ */
-var ZombieFactoryContract = web3.eth.contract(abi)
-var contractAddress = /*ส่วนนี้คือที่อยู่ contract ของเราบน Ethereum หลังจากได้นำมาใช้ */
-var ZombieFactory = ZombieFactoryContract.at(contractAddress)
-// `ZombieFactory` ได้ทำการเข้าถึงฟังก์ชั่นและอีเว้นท์ต่างๆที่เป็นชนิด public ใน contract ของเราเรียบร้อย
-
-// ต่อไปนี้จะเป็น event listener บางตัวที่จะรับค่า input ชนิดข้อความ:
-$("#ourButton").click(function(e) {
-  var name = $("#nameInput").val()
-  // เรียกฟังก์ชัน `createRandomZombie` ในcontract ของเรา:
-  ZombieFactory.createRandomZombie(name)
-})
-
-// รับฟังเหตุการณ์ `NewZombie` event, and update the UI `NewZombie` พร้อมทั้งทำการอัพเดท User Interface หรือการแสดงผลในส่วนของผู้ใช้
-var event = ZombieFactory.NewZombie(function(error, result) {
-  if (error) return
-  generateZombie(result.zombieId, result.name, result.dna)
-})
-
-// รับค่า DNA ของซอมบี้และทำการอัพเดทรูปภาพ
-function generateZombie(id, name, dna) {
-  let dnaStr = String(dna)
-  // เว้นระยะห่างด้านหน้าของ DNA ด้วยเลข 0 หากจำนวน DNA นั้นมีความยาวน้อยกว่า 16ตัว
-  while (dnaStr.length < 16)
-    dnaStr = "0" + dnaStr
-
-  let zombieDetails = {
-    //DNA สองตัวแรกจะบ่งบอกลักษณะของหัว และเราสามารถเลือกได้ 7 แบบดังนั้น จะทำการ % ด้วย 7 
-    // เพื่อที่จะได้จำนวน 0 – 6 จากนั้น+ด้วย1เพื่อให้ได้เป็นจำนวน 1 – 7 ทำให้เรามี7ตัวเลือก
-    // ไฟล์รูปภาพชื่อว่า"head1.png" ไปจนถึง "head7.png" 
-    // this number:
-    headChoice: dnaStr.substring(0, 2) % 7 + 1,
-    // 2ตัวถัดไปจะใช้เพื่อการเลือกรูปแบบของตา ถึงเราจะเลือกได้11รูปแบบ:
-    eyeChoice: dnaStr.substring(2, 4) % 11 + 1,
-    // เลือกเสื้อได้6แบบ:
-    shirtChoice: dnaStr.substring(4, 6) % 6 + 1,
-    // ข้อมูล6ตัวสุดท้ายจะเอาไว้ใช้เลือกสี โดยเราจะทำการอัพเดทโดยใช้ CSS filter: hue-rotate
-    // ซึ่งมี 360องศา:
-    skinColorChoice: parseInt(dnaStr.substring(6, 8) / 100 * 360),
-    eyeColorChoice: parseInt(dnaStr.substring(8, 10) / 100 * 360),
-    clothesColorChoice: parseInt(dnaStr.substring(10, 12) / 100 * 360),
-    zombieName: name,
-    zombieDescription: "A Level 1 CryptoZombie",
-  }
-  return zombieDetails
-}
-
-/* 
-และนี่ก็คือ javascript ของเรา ที่จะทำการสร้าง zombieDetails ด้านบน และอาจจะต้องใช้ javascripts ที่หามาจาก browser อีกเล็กน้อย (ในที่นี้เราใช้ Vau.js) เพื่อใช้ในการเปลี่ยนรูปต่างๆ ไปมาและใส่ CSS filter ต่างๆ ซึ่งคุณจะเข้าใจโค้ดทั้งหมดนี้ในบทต่อๆ ไป
 
 */
