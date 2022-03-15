@@ -1,72 +1,27 @@
 /* 
-https://cryptozombies.io/th/lesson/2/chapter/4
-หัวข้อ 4: Require
-ในบทแรกเราได้ทำให้ผู้ใช้สามารถสร้างซอมบี้ขึ้นมาจากการเรียกใช้ฟังก์ชั่น createRandomZombie และใส่ชื่อซอมบี้ลงไป อย่างไรก็ตาม เกมนี้จะไม่สนุกเลยหากผู้ใช้สามารถเรียกใช้ฟังก์ชั่นได้เรื่อย ๆ แล้วสร้างซอมบี้จำนวนมากในคราวเดียวขึ้นในกองทัพ
+https://cryptozombies.io/th/lesson/2/chapter/5
+หัวข้อ 5: Inheritance
 
-มาทำให้ผู้เล่นสามารถเรียกฟังก์ชั่นได้เพียงแค่รอบเดียวกันเถอะ เพราะจะส่งผลให้ผู้เล่นสร้างได้เพียงซอมบี้ตัวแรกเริ่ม แค่ในตอนแรกที่เข้าเล่นเกม
+ยังมี contract ที่เป็น feature หนึ่งใน Solidity ซึ่งช่วยในการจัดการก็คือ inheritance:
 
-เราจะต้องใช้วิธีการเช่นใดที่สามารถทำให้ฟังก์ชั่นนี้ถูกเรียกได้เพียงครั้งเดียวต่อผู้เล่นหนึ่งคนกันนะ?
-
-เราจะใช้ require ซึ่ง require จะทำให้ฟังก์ชั่นมีการแสดง error และไม่ประมวลผลออกมาหากมีบางเงื่อนไขไม่ถูกต้อง:
-
-function sayHiToVitalik(string _name) public returns (string) {
-  // เปรียบเทียบว่าหาก _name เท่ากับ "Vitalik" หรือไม่ หากเท่ากันจะทำงานต่อ 
-  // แต่ถ้าไม่เท่ากันจะออกจากฟังก์ชัน
-  // (Side note: Solidity ไม่มีการเปรียบเทียบ native string เราจึงต้อง
-  // เปรียบเทียบ keccak256 hash ของมันเพื่อดูว่าข้อมูลชนิด strings 
-  //มีค่าตรงกันหรือไม่)
-  require(keccak256(_name) == keccak256("Vitalik"));
-  // หากเงื่อนไขมีค่าเป็น true ก็จะเข้าสู่ฟังก์ชั่น:
-  return "Hi!";
+contract Doge {
+  function catchphrase() public returns (string) {
+    return "So Wow CryptoDoge";
+  }
 }
-หากเรียกฟังก์ชั่นด้วย sayHiToVitalik("Vitalik") จะมีการแสดงผลว่า "Hi!" แต่ถ้ามีการเรียกใช้ด้วย input นอกเหนือจากนี้จะแสดง error ออกมาและไม่มีการประมวลโค้ด
 
-ดังนั้น require ถือเป็นสิ่งสำคัญในการตรวจสอบเงื่อนไขต่าง ๆ ที่จะต้องมีค่าเป็น true ก่อนที่จะรันฟังก์ชั่นใด ๆ
-มาลองทดสอบกัน
-เกมซอมบี้ของเรานั้นไม่ต้องการให้ผู้ใช้สามารถสร้างซอมบี้ไปเรื่อย ๆ โดยไม่ที่สิ้นสุดจากการเรียกใช้ฟังก์ชั่น createRandomZombie ไปเรื่อย ๆ — เพราะจะทำให้เกมไม่สนุกแน่นอน
-
-มาใช้คำสั่ง require เพื่อทำให้แน่ใจได้ว่าฟังก์ชั่นนี้จะถูกเรียกโดยผู้เล่น 1 คน เพียงแค่รอบเดียวในตอนที่เข้าเล่นเกมครั้งแรก
-
-ใส่ statement require ที่ด้านหน้าของฟังก์ชั่น createRandomZombieโดยฟังก์ชั่นนี้จะต้องมีการตรวจสอบเพื่อความแน่ใจว่า ownerZombieCount[msg.sender] จะมีค่าเท่ากับ 0 และจะแสดง error หากไม่เป็นเช่นนั้น
-Note: ใน Solidity จะไม่ให้ความสำคัญกับลำดับของคำสั่งว่าอะไรต้องมาก่อน อย่างไรก็ตาม โปรแกรมตรวจสอบความถูกต้องของเรานั้นค่อนข้างไม่ซับซ้อน จึงรับคำตอบที่ถูกต้องเพียงค่าเดียว ซึ่งก็คือต้องเอา ownerZombieCount[msg.sender] ขึ้นมานำหน้าก่อนเท่านั้น
-
-pragma solidity ^0.4.19;
-
-contract ZombieFactory {
-
-    event NewZombie(uint zombieId, string name, uint dna);
-
-    uint dnaDigits = 16;
-    uint dnaModulus = 10 ** dnaDigits;
-
-    struct Zombie {
-        string name;
-        uint dna;
-    }
-
-    Zombie[] public zombies;
-
-    mapping (uint => address) public zombieToOwner;
-    mapping (address => uint) ownerZombieCount;
-
-    function _createZombie(string _name, uint _dna) private {
-        uint id = zombies.push(Zombie(_name, _dna)) - 1;
-        zombieToOwner[id] = msg.sender;
-        ownerZombieCount[msg.sender]++;
-        NewZombie(id, _name, _dna);
-    }
-
-    function _generateRandomDna(string _str) private view returns (uint) {
-        uint rand = uint(keccak256(_str));
-        return rand % dnaModulus;
-    }
-
-    function createRandomZombie(string _name) public {
-        // เริ่มที่ตรงนี้
-        require(ownerZombieCount[msg.sender] == 0)
-        uint randDna = _generateRandomDna(_name);
-        _createZombie(_name, randDna);
-    }
-
+contract BabyDoge is Doge {
+  function anotherCatchphrase() public returns (string) {
+    return "Such Moon BabyDoge";
+  }
 }
+
+BabyDoge inherits มาจาก Doge หมายถึงหากเรามีการ compile และเรียก BabyDoge ขึ้น จะสามารถเข้าถึงได้ทั้งฟังก์ชั่น catchphrase() และ anotherCatchphrase() (และยังสามารถเข้าถึงฟังก์ชั่นชนิด public ใดๆ ก็ตามที่เราอาจเพิ่มเข้าไปใน Doge).
+
+วิธีนี้สามารถนำไปใช้ใน logical inheritance (อย่างเช่นใช้กับ subclass ว่า Cat นั้นเป็น Animal) นอกจากนี้ยังสามาถใช้เพื่อการจัดการโค้ดโดยการจัดกลุ่มให้ logic ที่มีความคล้ายคลึงกันให้อยู่ด้วยกันเป็นกลุ่มๆ
+
+ทดสอบ
+สร้าง contract ชื่อว่า ZombieFeeding ให้อยู่ด้านล่าง ZombieFactory โดย contract นี้จะต้องรับ inherit มาจาก contract ชื่อ ZombieFactory
+
+
 */
