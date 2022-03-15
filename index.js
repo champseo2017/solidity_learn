@@ -1,27 +1,26 @@
 /* 
-https://cryptozombies.io/th/lesson/2/chapter/5
-หัวข้อ 5: Inheritance
+https://cryptozombies.io/th/lesson/2/chapter/6
+หัวข้อ 6: Import
 
-ยังมี contract ที่เป็น feature หนึ่งใน Solidity ซึ่งช่วยในการจัดการก็คือ inheritance:
+เมื่อมีไฟล์มากกว่า 1 เราจะต้องทำการอิมพอร์ตไฟล์ให้เข้าไปอยู่ในอีกไฟล์หนึ่ง โดย Solidity จะใช้คำว่า import :
 
-contract Doge {
-  function catchphrase() public returns (string) {
-    return "So Wow CryptoDoge";
-  }
+import "./someothercontract.sol";
+
+contract newContract is SomeOtherContract {
+
 }
 
-contract BabyDoge is Doge {
-  function anotherCatchphrase() public returns (string) {
-    return "Such Moon BabyDoge";
-  }
+ในตอนนี้หลังจากได้ตั้งค่าโครงสร้างหลายไฟล์ขึ้นมา (multi-file structure) เราจำเป็นจะต้องใช้คำสั่ง import เพื่ออ่านเนื้อหาของอีกไฟล์หนึ่งด้วย:
+
+อิมพอร์ต zombiefactory.sol เข้าไปในไฟล์ใหม่ที่ชื่อว่า zombiefeeding.sol
+
+pragma solidity ^0.4.19;
+
+// put import statement here
+import "./zombiefactory.sol";
+
+contract ZombieFeeding is ZombieFactory {
+
 }
-
-BabyDoge inherits มาจาก Doge หมายถึงหากเรามีการ compile และเรียก BabyDoge ขึ้น จะสามารถเข้าถึงได้ทั้งฟังก์ชั่น catchphrase() และ anotherCatchphrase() (และยังสามารถเข้าถึงฟังก์ชั่นชนิด public ใดๆ ก็ตามที่เราอาจเพิ่มเข้าไปใน Doge).
-
-วิธีนี้สามารถนำไปใช้ใน logical inheritance (อย่างเช่นใช้กับ subclass ว่า Cat นั้นเป็น Animal) นอกจากนี้ยังสามาถใช้เพื่อการจัดการโค้ดโดยการจัดกลุ่มให้ logic ที่มีความคล้ายคลึงกันให้อยู่ด้วยกันเป็นกลุ่มๆ
-
-ทดสอบ
-สร้าง contract ชื่อว่า ZombieFeeding ให้อยู่ด้านล่าง ZombieFactory โดย contract นี้จะต้องรับ inherit มาจาก contract ชื่อ ZombieFactory
-
 
 */
